@@ -36,7 +36,7 @@ namespace Aura.Tokens
 
         public override string ToString()
         {
-            return Enum.GetName(typeof(Type), Type) + '[' + Data + ']';
+            return Enum.GetName(typeof(TokenType), Type) + '[' + Data + ']';
         }
 
         public static bool operator ==(Token l, Token r)

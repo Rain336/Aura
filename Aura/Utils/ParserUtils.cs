@@ -1,9 +1,9 @@
 ﻿using Aura.Ast;
 using Aura.Tokens;
 
-namespace Aura
+namespace Aura.Utils
 {
-    public static class Utils
+    public static class ParserUtils
     {
         public static int GetPrecedence(this Token token)
         {

@@ -1,4 +1,5 @@
-﻿using Aura.Ast;
+﻿using System.IO;
+using Aura.Ast;
 using NUnit.Framework;
 
 namespace Aura.Test
@@ -9,9 +10,11 @@ namespace Aura.Test
         [Test]
         public void Plus()
         {
-            var parser = new Parser(new TokenStack(new StringLexer("5 + 4")));
-            var expr = parser.ParseExpression();
-            
+            var stack = new TokenStack(new Lexer(new StringReader("5 + 4")));
+            TestContext.WriteLine(stack.ToString());
+            var parser = new Parser(stack);
+            var expr = parser.ParseBinaryOperator();
+
             Assert.IsInstanceOf<BinaryOperator>(expr);
             var op = (BinaryOperator) expr;
             Assert.AreEqual('+', op.Operator);

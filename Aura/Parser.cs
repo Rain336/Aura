@@ -1,6 +1,7 @@
 ﻿using System;
 using Aura.Ast;
 using Aura.Tokens;
+using Aura.Utils;
 
 namespace Aura
 {
@@ -20,7 +21,15 @@ namespace Aura
         {
             Stack.PushCursor();
             
-            IExpression expr = ParseNumericLiteral();
+            IExpression expr = ParseUnaryOperator();
+            if (expr != null)
+            {
+                Stack.ForgetCursor();
+                return expr;
+            }
+            Stack.ApplyCursor();
+            
+            expr = ParseNumericLiteral();
             if (expr != null)
             {
                 Stack.ForgetCursor();
@@ -35,21 +44,6 @@ namespace Aura
                 return expr;
             }
             Stack.ApplyCursor();
-            
-            expr = ParseUnaryOperator();
-            if (expr != null)
-            {
-                Stack.ForgetCursor();
-                return expr;
-            }
-            Stack.ApplyCursor();
-            
-            expr = ParseBinaryOperator();
-            if (expr != null)
-            {
-                Stack.ForgetCursor();
-                return expr;
-            }
             
             throw new Exception(); //TODO: THROW EXCEPTION!
         }

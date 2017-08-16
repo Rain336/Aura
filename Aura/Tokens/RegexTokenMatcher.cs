@@ -19,7 +19,7 @@ namespace Aura.Tokens
 
         public bool Match(string input)
         {
-            return Regex.IsMatch(input);
+            return Regex.Match(input).Length == input.Length;
         }
 
         public Token CreateToken(string input)
