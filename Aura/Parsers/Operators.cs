@@ -6,7 +6,7 @@ namespace Aura.Parsers
 {
     public sealed partial class Parser
     {
-        public IExpression ParseBinaryOperator(IExpression left, int min = 0)
+        public IExpression ParseBinaryOperator(IExpression left, int min = 1)
         {
             var token = Stack.Peek();
             if (!token.IsBinaryOperator())
@@ -20,8 +20,6 @@ namespace Aura.Parsers
                 var right = ParseExpression();
 
                 token = Stack.Peek();
-                if (!token.IsBinaryOperator())
-                    return null;
 
                 while (token.GetPrecedence() > op.GetPrecedence())
                 {

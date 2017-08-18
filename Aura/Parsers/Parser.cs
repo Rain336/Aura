@@ -38,6 +38,13 @@ namespace Aura.Parsers
                     result = ParseStringLiteral();
                     break;
 
+                case TokenType.OpenParentheses:
+                    Stack.Cursor++;
+                    result =  ParseExpression();
+                    if (Stack.Peek().Type == TokenType.CloseParentheses)
+                        Stack.Cursor++;
+                    break;
+
                 default:
                     return null;
             }

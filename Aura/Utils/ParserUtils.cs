@@ -12,7 +12,7 @@ namespace Aura.Utils
 
         public static bool IsBinaryOperator(this Token token)
         {
-            return token.Type >= TokenType.Plus || token.Type <= TokenType.Modulo;
+            return token.Type >= TokenType.Plus && token.Type <= TokenType.Modulo;
         }
     }
 }

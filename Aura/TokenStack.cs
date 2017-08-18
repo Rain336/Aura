@@ -64,6 +64,8 @@ namespace Aura
 
         public Token Next()
         {
+            if (Cursor >= _tokens.Count)
+                return new Token(TokenType.Unknowen, "");
             var result = _tokens[Cursor];
             Cursor++;
             return result;
@@ -71,7 +73,9 @@ namespace Aura
 
         public Token Peek()
         {
-            return _tokens[Cursor];
+            return Cursor >= _tokens.Count
+                ? new Token(TokenType.Unknowen, "")
+                : _tokens[Cursor];
         }
     }
 }
