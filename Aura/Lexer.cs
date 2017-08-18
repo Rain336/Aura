@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.Metadata;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -59,6 +60,18 @@ namespace Aura
             return s;
         }
 
+        public string ReadWhile(Func<char, bool> predicate, string prefix = "")
+        {
+            var c = Reader.Peek();
+            while (c != -1 && predicate((char) c))
+            {
+                Reader.Read();
+                prefix += (char) c;
+                c = Reader.Peek();
+            }
+            return prefix;
+        }
+
         private bool IsIgnored(char c)
         {
             if (c != '\n')
@@ -83,6 +96,12 @@ namespace Aura
                     break;
                 buffer += (char) c;
 
+                if (c == '/' && Peek() == '/')
+                {
+                    ReadWhile(p => p != '\n');
+                    continue;
+                }
+
                 foreach (var matcher in Matchers)
                 {
                     if (matcher.Match(buffer))
@@ -95,6 +114,12 @@ namespace Aura
                 }
 
                 if (multiple) continue;
+                
+                if (m == null)
+                {
+                    result.Add(new Token(TokenType.Identifier, ReadWhile(p => !IsIgnored(p))));
+                    continue;
+                }
 
                 c = Peek();
                 if (c == -1)

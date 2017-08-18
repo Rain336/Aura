@@ -2,7 +2,7 @@
 
 namespace Aura.Ast
 {
-    public sealed class NumericLiteral : IExpression
+    public sealed class NumericLiteral : ILiteral
     {
         public string Value { get; set; }
         public bool Hexadecimal { get; set; }
