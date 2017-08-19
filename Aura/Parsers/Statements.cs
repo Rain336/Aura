@@ -7,10 +7,9 @@ namespace Aura.Parsers
     {
         public VariableStatement ParseVariable()
         {
-            var token = Stack.Peek();
+            var token = Stack.Next();
             if (token.Type != TokenType.Var && token.Type != TokenType.Val)
                 return null;
-            Stack.Cursor++;
             
             var statement = new VariableStatement
             {

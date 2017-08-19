@@ -20,6 +20,8 @@
         // Keyword
         Var,
         Val,
+        If,
+        Else,
         
         // Literals
         Decimal,

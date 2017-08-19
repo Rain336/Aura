@@ -19,26 +19,41 @@ namespace Aura.Parsers
 
         public IStatement ParseStatement()
         {
+            Stack.PushCursor();
+            IStatement result;
+
             switch (Stack.Peek().Type)
             {
                 case TokenType.Val:
                 case TokenType.Var:
-                    return ParseVariable();
+                    result = ParseVariable();
+                    break;
 
                 default:
                     var expr = ParseExpression();
                     if (expr == null)
-                        return null;
-                    return new ExpressionStatement
-                    {
-                        Expression = expr
-                    };
+                        result = null;
+                    else
+                        result = new ExpressionStatement
+                        {
+                            Expression = expr
+                        };
+                    break;
             }
+
+            if (result == null)
+                Stack.PopCursor();
+            else
+                Stack.ForgetCursor();
+
+            return result;
         }
 
         public IExpression ParseExpression()
         {
+            Stack.PushCursor();
             IExpression result;
+
             switch (Stack.Peek().Type)
             {
                 case TokenType.Decimal:
@@ -64,9 +79,20 @@ namespace Aura.Parsers
                         Stack.Cursor++;
                     break;
 
+                case TokenType.If:
+                    result = ParseIf();
+                    break;
+
                 default:
                     return null;
             }
+
+            if (result == null)
+            {
+                Stack.PopCursor();
+                return null;
+            }
+            Stack.ForgetCursor();
             return Stack.Peek().IsBinaryOperator() ? ParseBinaryOperator(result) : result;
         }
     }

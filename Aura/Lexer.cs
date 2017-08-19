@@ -24,6 +24,8 @@ namespace Aura
             
             new StringTokenMatcher(TokenType.Var, "var"),
             new StringTokenMatcher(TokenType.Val, "val"),
+            new StringTokenMatcher(TokenType.If, "if"),
+            new StringTokenMatcher(TokenType.Else, "else"),
 
             new RegexTokenMatcher(TokenType.Decimal, "[0-9]+"),
             new RegexTokenMatcher(TokenType.Hexadecimal, "0x[0-9A-Fa-f]+"),

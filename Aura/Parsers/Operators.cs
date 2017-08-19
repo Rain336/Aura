@@ -42,22 +42,18 @@ namespace Aura.Parsers
 
         public UnaryOperator ParseUnaryOperator()
         {
-            var token = Stack.Peek();
+            var token = Stack.Next();
             if (token.Type != TokenType.Plus && token.Type != TokenType.Minus)
             {
                 return null;
             }
-            Stack.Cursor++;
 
-            Stack.PushCursor();
             var number = ParseExpression();
             if (number == null)
             {
-                Stack.PopCursor();
                 return null;
             }
 
-            Stack.ForgetCursor();
             return new UnaryOperator
             {
                 Operator = token.Data[0],
