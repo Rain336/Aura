@@ -122,7 +122,7 @@ namespace Aura
                 
                 if (m == null)
                 {
-                    result.Add(new Token(TokenType.Identifier, ReadWhile(p => !IsIgnored(p), buffer)));
+                    result.Add(new Token(TokenType.Identifier, ReadWhile(char.IsLetterOrDigit, buffer)));
                     buffer = "";
                     continue;
                 }
