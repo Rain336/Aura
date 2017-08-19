@@ -23,7 +23,7 @@ namespace Aura
             new CharTokenMatcher(TokenType.CloseBrace, '}'),
             new CharTokenMatcher(TokenType.Colon, ':'),
             new CharTokenMatcher(TokenType.Equals, '='),
-            
+
             new StringTokenMatcher(TokenType.Var, "var"),
             new StringTokenMatcher(TokenType.Val, "val"),
             new StringTokenMatcher(TokenType.If, "if"),
@@ -123,7 +123,7 @@ namespace Aura
                 }
 
                 if (multiple) continue;
-                
+
                 if (m == null)
                 {
                     result.Add(new Token(TokenType.Identifier, ReadWhile(char.IsLetterOrDigit, buffer)));
@@ -131,7 +131,8 @@ namespace Aura
                     continue;
                 }
 
-                result.Add(m.CreateToken(buffer, this));
+                if (!m.CreateToken(buffer, this, out var token)) continue;
+                result.Add(token);
                 buffer = "";
             }
 

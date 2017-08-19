@@ -9,9 +9,9 @@ namespace Aura.Tokens
 
         public StringTokenMatcher(TokenType type, string matcher)
         {
-            if(string.IsNullOrWhiteSpace(matcher))
+            if (string.IsNullOrWhiteSpace(matcher))
                 throw new ArgumentNullException(nameof(matcher));
-            
+
             Type = type;
             Matcher = matcher;
         }
@@ -21,16 +21,39 @@ namespace Aura.Tokens
             return Matcher.StartsWith(input);
         }
 
-        public Token CreateToken(string buffer, Lexer lexer)
+        public bool CreateToken(string buffer, Lexer lexer, out Token token)
         {
             if (buffer == Matcher)
-                return new Token(Type, Matcher);
-            while ((buffer += lexer.Peek()) != Matcher)
+            {
+                token = new Token(Type, Matcher);
+                return true;
+            }
+
+            var c = lexer.Peek();
+            if (c == -1)
+            {
+                token = default(Token);
+                return false;
+            }
+
+            while (Match(buffer += (char) c))
             {
                 lexer.Read();
+                c = lexer.Peek();
+                if (c != -1) continue;
+
+                token = default(Token);
+                return false;
             }
-            lexer.Read();
-            return new Token(Type, Matcher);
+
+            if (buffer.Length - 1 != Matcher.Length)
+            {
+                token = default(Token);
+                return false;
+            }
+
+            token = new Token(Type, Matcher);
+            return true;
         }
     }
 }

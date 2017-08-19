@@ -22,15 +22,28 @@ namespace Aura.Tokens
             return Regex.Match(input).Length == input.Length;
         }
 
-        public Token CreateToken(string buffer, Lexer lexer)
+        public bool CreateToken(string buffer, Lexer lexer, out Token token)
         {
-            buffer += lexer.Peek();
+            var c = lexer.Peek();
+            if (c == -1)
+            {
+                token = new Token(Type, Regex.Match(buffer).Value);
+                return true;
+            }
+            buffer += (char) c;
             while (Match(buffer))
             {
                 lexer.Read();
-                buffer += lexer.Peek();
+                c = lexer.Peek();
+                if (c == -1)
+                {
+                    token = new Token(Type, Regex.Match(buffer).Value);
+                    return true;
+                }
+                buffer += (char) c;
             }
-            return new Token(Type, Regex.Match(buffer).Value);
+            token = new Token(Type, Regex.Match(buffer).Value);
+            return true;
         }
     }
 }
