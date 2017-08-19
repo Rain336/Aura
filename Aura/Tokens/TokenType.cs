@@ -14,6 +14,12 @@
         // Punctuation
         OpenParentheses,
         CloseParentheses,
+        Colon,
+        Equals,
+        
+        // Keyword
+        Var,
+        Val,
         
         // Literals
         Decimal,

@@ -19,6 +19,11 @@ namespace Aura
 
             new CharTokenMatcher(TokenType.OpenParentheses, '('),
             new CharTokenMatcher(TokenType.CloseParentheses, ')'),
+            new CharTokenMatcher(TokenType.Colon, ':'),
+            new CharTokenMatcher(TokenType.Equals, '='),
+            
+            new StringTokenMatcher(TokenType.Var, "var"),
+            new StringTokenMatcher(TokenType.Val, "val"),
 
             new RegexTokenMatcher(TokenType.Decimal, "[0-9]+"),
             new RegexTokenMatcher(TokenType.Hexadecimal, "0x[0-9A-Fa-f]+"),
@@ -117,7 +122,8 @@ namespace Aura
                 
                 if (m == null)
                 {
-                    result.Add(new Token(TokenType.Identifier, ReadWhile(p => !IsIgnored(p))));
+                    result.Add(new Token(TokenType.Identifier, ReadWhile(p => !IsIgnored(p), buffer)));
+                    buffer = "";
                     continue;
                 }
 

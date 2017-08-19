@@ -18,7 +18,7 @@ namespace Aura.Tokens
 
         public bool Match(string input)
         {
-            return Matcher == input;
+            return Matcher.StartsWith(input);
         }
 
         public Token CreateToken(string input)

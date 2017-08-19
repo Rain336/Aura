@@ -17,6 +17,25 @@ namespace Aura.Parsers
             Stack = stack;
         }
 
+        public IStatement ParseStatement()
+        {
+            switch (Stack.Peek().Type)
+            {
+                case TokenType.Val:
+                case TokenType.Var:
+                    return ParseVariable();
+
+                default:
+                    var expr = ParseExpression();
+                    if (expr == null)
+                        return null;
+                    return new ExpressionStatement
+                    {
+                        Expression = expr
+                    };
+            }
+        }
+
         public IExpression ParseExpression()
         {
             IExpression result;
@@ -40,7 +59,7 @@ namespace Aura.Parsers
 
                 case TokenType.OpenParentheses:
                     Stack.Cursor++;
-                    result =  ParseExpression();
+                    result = ParseExpression();
                     if (Stack.Peek().Type == TokenType.CloseParentheses)
                         Stack.Cursor++;
                     break;
