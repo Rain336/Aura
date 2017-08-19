@@ -12,7 +12,7 @@ namespace Aura.Tokens
         {
             if (string.IsNullOrEmpty(regex))
                 throw new ArgumentNullException(nameof(regex));
-            
+
             Type = type;
             Regex = new Regex(regex);
         }
@@ -22,9 +22,15 @@ namespace Aura.Tokens
             return Regex.Match(input).Length == input.Length;
         }
 
-        public Token CreateToken(string input)
+        public Token CreateToken(string buffer, Lexer lexer)
         {
-            return new Token(Type, Regex.Match(input).Value);
+            buffer += lexer.Peek();
+            while (Match(buffer))
+            {
+                lexer.Read();
+                buffer += lexer.Peek();
+            }
+            return new Token(Type, Regex.Match(buffer).Value);
         }
     }
 }

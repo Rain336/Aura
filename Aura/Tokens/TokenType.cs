@@ -13,7 +13,9 @@
         
         // Punctuation
         OpenParentheses,
+        OpenBrace,
         CloseParentheses,
+        CloseBrace,
         Colon,
         Equals,
         

@@ -29,9 +29,11 @@ namespace Aura.Tokens
             return input.Length == 1 && input[0] == Char;
         }
 
-        public Token CreateToken(string input)
+        public Token CreateToken(string buffer, Lexer lexer)
         {
-            return new Token(Type, Char.ToString());
+            if (buffer.Length == 1 && buffer[0] == Char)
+                return new Token(Type, Char.ToString());
+            return default(Token);
         }
     }
 }

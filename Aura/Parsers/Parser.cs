@@ -83,6 +83,10 @@ namespace Aura.Parsers
                     result = ParseIf();
                     break;
 
+                case TokenType.OpenBrace:
+                    result = ParseBlock();
+                    break;
+
                 default:
                     return null;
             }

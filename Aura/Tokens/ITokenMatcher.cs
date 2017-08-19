@@ -3,6 +3,6 @@
     public interface ITokenMatcher
     {
         bool Match(string input);
-        Token CreateToken(string input);
+        Token CreateToken(string buffer, Lexer lexer);
     }
 }

@@ -18,7 +18,9 @@ namespace Aura
             new CharTokenMatcher(TokenType.Modulo, '%'),
 
             new CharTokenMatcher(TokenType.OpenParentheses, '('),
+            new CharTokenMatcher(TokenType.OpenBrace, '{'),
             new CharTokenMatcher(TokenType.CloseParentheses, ')'),
+            new CharTokenMatcher(TokenType.CloseBrace, '}'),
             new CharTokenMatcher(TokenType.Colon, ':'),
             new CharTokenMatcher(TokenType.Equals, '='),
             
@@ -129,28 +131,7 @@ namespace Aura
                     continue;
                 }
 
-                c = Peek();
-                if (c == -1)
-                {
-                    result.Add(m.CreateToken(buffer));
-                    buffer = "";
-                    break;
-                }
-                buffer += (char) c;
-                while (m.Match(buffer))
-                {
-                    Read();
-                    c = Peek();
-                    if (c == -1)
-                    {
-                        result.Add(m.CreateToken(buffer));
-                        buffer = "";
-                        break;
-                    }
-                    buffer += (char) c;
-                }
-
-                result.Add(m.CreateToken(buffer));
+                result.Add(m.CreateToken(buffer, this));
                 buffer = "";
             }
 

@@ -21,8 +21,15 @@ namespace Aura.Tokens
             return Matcher.StartsWith(input);
         }
 
-        public Token CreateToken(string input)
+        public Token CreateToken(string buffer, Lexer lexer)
         {
+            if (buffer == Matcher)
+                return new Token(Type, Matcher);
+            while ((buffer += lexer.Peek()) != Matcher)
+            {
+                lexer.Read();
+            }
+            lexer.Read();
             return new Token(Type, Matcher);
         }
     }
