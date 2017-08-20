@@ -26,7 +26,15 @@ namespace Aura.Parsers
             {
                 case TokenType.Val:
                 case TokenType.Var:
-                    result = ParseVariable();
+                    result = ParseVariableDefinition();
+                    break;
+
+                case TokenType.For:
+                    result = ParseFor();
+                    break;
+
+                case TokenType.While:
+                    result = ParseWhile();
                     break;
 
                 default:
@@ -85,6 +93,10 @@ namespace Aura.Parsers
 
                 case TokenType.OpenBrace:
                     result = ParseBlock();
+                    break;
+
+                case TokenType.Identifier:
+                    result = ParseVariable();
                     break;
 
                 default:

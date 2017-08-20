@@ -2,7 +2,7 @@ using System;
 
 namespace Aura.Tokens
 {
-    public sealed class CharTokenMatcher : ITokenMatcher
+    public sealed class CharTokenMatcher
     {
         public readonly char Char;
         public readonly TokenType Type;
@@ -22,22 +22,6 @@ namespace Aura.Tokens
         {
             Type = type;
             Char = c;
-        }
-
-        public bool Match(string input)
-        {
-            return input.Length == 1 && input[0] == Char;
-        }
-
-        public bool CreateToken(string buffer, Lexer lexer, out Token token)
-        {
-            if (buffer.Length == 1 && buffer[0] == Char)
-            {
-                token = new Token(Type, Char.ToString());
-                return true;
-            }
-            token = default(Token);
-            return false;
         }
     }
 }

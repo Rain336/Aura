@@ -5,6 +5,17 @@ namespace Aura.Parsers
 {
     public sealed partial class Parser
     {
+        public VariableExpression ParseVariable()
+        {
+            var token = Stack.Next();
+            if (token.Type != TokenType.Identifier)
+                return null;
+            return new VariableExpression
+            {
+                Name = token.Data
+            };
+        }
+
         public BlockExpression ParseBlock()
         {
             if (Stack.Next().Type != TokenType.OpenBrace)

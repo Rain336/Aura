@@ -7,7 +7,7 @@ namespace Aura.Test
 {
     public static class VariableTests
     {
-        [Test("No Asign var Statement 'var x: Test'")]
+        [Test("var x: Test")]
         public static void NoAsign()
         {
             var stmt = Parse("var x: Test");
@@ -19,7 +19,7 @@ namespace Aura.Test
             Assert.AreEqual(null, variable.Assignment);
         }
 
-        [Test("No Asign var Statement 'var x = 4 * 5'")]
+        [Test("var x = 4 * 5")]
         public static void NoType()
         {
             var stmt = Parse("var x = 4 * 5");
@@ -31,7 +31,7 @@ namespace Aura.Test
             Assert.IsType<BinaryOperator>(variable.Assignment);
         }
 
-        [Test("No Asign var Statement 'var x: int = 4 * 5'")]
+        [Test("var x: int = 4 * 5")]
         public static void Full()
         {
             var stmt = Parse("var x: int = 4 * 5");

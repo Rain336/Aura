@@ -2,7 +2,7 @@
 
 namespace Aura.Tokens
 {
-    public sealed class StringTokenMatcher : ITokenMatcher
+    public sealed class StringTokenMatcher
     {
         public readonly TokenType Type;
         public readonly string Matcher;
@@ -21,7 +21,7 @@ namespace Aura.Tokens
             return Matcher.StartsWith(input);
         }
 
-        public bool CreateToken(string buffer, Lexer lexer, out Token token)
+        public bool CreateToken(ref string buffer, Lexer lexer, out Token token)
         {
             if (buffer == Matcher)
             {
@@ -45,8 +45,9 @@ namespace Aura.Tokens
                 token = default(Token);
                 return false;
             }
+            buffer = buffer.Remove(buffer.Length - 1);
 
-            if (buffer.Length - 1 != Matcher.Length)
+            if (buffer.Length != Matcher.Length)
             {
                 token = default(Token);
                 return false;

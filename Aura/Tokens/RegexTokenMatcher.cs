@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Aura.Tokens
 {
-    public sealed class RegexTokenMatcher : ITokenMatcher
+    public sealed class RegexTokenMatcher
     {
         public readonly TokenType Type;
         public readonly Regex Regex;

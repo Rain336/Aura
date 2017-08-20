@@ -7,7 +7,7 @@ namespace Aura.Test
 {
     public static class MathTests
     {
-        [Test("Simple '4 + 5' Test")]
+        [Test("4 + 5")]
         public static void Plus()
         {
             var expr = Parse("4 + 5");
@@ -19,7 +19,7 @@ namespace Aura.Test
             Assert.AreEqual(9, result);
         }
 
-        [Test("'4 + 5 * 9' Precedence Test")]
+        [Test("4 + 5 * 9")]
         public static void Precedence()
         {
             var expr = Parse("4 + 5 * 9");
@@ -32,7 +32,7 @@ namespace Aura.Test
             Assert.IsType<NumericLiteral>(rop.Right);
         }
         
-        [Test("'(4 + 5) * 9' Precedence Test")]
+        [Test("(4 + 5) * 9")]
         public static void Precedence2()
         {
             var expr = Parse("(4 + 5) * 9");

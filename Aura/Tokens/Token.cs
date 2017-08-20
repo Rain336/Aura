@@ -6,6 +6,8 @@ namespace Aura.Tokens
     {
         public readonly TokenType Type;
         public readonly string Data;
+        public int Line { get; set; }
+        public int Column { get; set; }
 
         public Token(TokenType type, string data)
         {
@@ -14,6 +16,8 @@ namespace Aura.Tokens
             
             Type = type;
             Data = data;
+            Line = -1;
+            Column = -1;
         }
 
         public bool Equals(Token other)
