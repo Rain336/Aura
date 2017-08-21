@@ -1,5 +1,6 @@
 ﻿using Aura.Ast;
 using Aura.Tokens;
+using Aura.Utils;
 
 namespace Aura.Parsers
 {
@@ -7,30 +8,34 @@ namespace Aura.Parsers
     {
         public ILiteral ParseLiteral()
         {
-            var token = Stack.Peek();
-            if (token.Type == TokenType.String)
-                return ParseStringLiteral();
-            if (token.Type == TokenType.Decimal || token.Type == TokenType.Hexadecimal)
-                return ParseNumericLiteral();
-            return null;
+            switch (Stack.Peek().Type)
+            {
+                case TokenType.String:
+                    return ParseStringLiteral();
+
+                case TokenType.Decimal:
+                case TokenType.Hexadecimal:
+                    return ParseNumericLiteral();
+
+                default:
+                    return null;
+            }
         }
-        
+
         public StringLiteral ParseStringLiteral()
         {
-            var token = Stack.Next();
-            return token.Type != TokenType.String
-                ? null
-                : new StringLiteral
-                {
-                    Value = token.Data
-                };
+            return new StringLiteral
+            {
+                Value = ReadType(TokenType.String).Data
+            };
         }
 
         public NumericLiteral ParseNumericLiteral()
         {
             var token = Stack.Next();
             if (token.Type != TokenType.Decimal && token.Type != TokenType.Hexadecimal)
-                return null;
+                throw new ParserException("Numeric Literal", token);
+
             return new NumericLiteral
             {
                 Value = token.Data,

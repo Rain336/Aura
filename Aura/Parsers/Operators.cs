@@ -10,7 +10,7 @@ namespace Aura.Parsers
         {
             var token = Stack.Peek();
             if (!token.IsBinaryOperator())
-                return null;
+                throw new ParserException("Expected Operator", token);
 
             while (token.GetPrecedence() >= min)
             {
@@ -26,7 +26,7 @@ namespace Aura.Parsers
                     right = ParseBinaryOperator(right, token.GetPrecedence());
                     token = Stack.Peek();
                     if (!token.IsBinaryOperator())
-                        return null;
+                        throw new ParserException("Expected Operator", token);
                 }
 
                 left = new BinaryOperator
@@ -44,20 +44,12 @@ namespace Aura.Parsers
         {
             var token = Stack.Next();
             if (token.Type != TokenType.Plus && token.Type != TokenType.Minus)
-            {
-                return null;
-            }
-
-            var number = ParseExpression();
-            if (number == null)
-            {
-                return null;
-            }
+                throw new ParserException("Plus or Minus", token);
 
             return new UnaryOperator
             {
                 Operator = token.Data[0],
-                Number = number
+                Number = ParseExpression()
             };
         }
     }

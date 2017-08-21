@@ -11,55 +11,41 @@ namespace Aura.Parsers
 
         public Parser(TokenStack stack)
         {
-            if (stack == null)
-                throw new ArgumentNullException(nameof(stack));
+            Stack = stack ?? throw new ArgumentNullException(nameof(stack));
+        }
 
-            Stack = stack;
+        private Token ReadType(TokenType type)
+        {
+            var token = Stack.Next();
+            if (token.Type != type)
+                throw new ParserException(Enum.GetName(typeof(TokenType), type), token);
+            return token;
         }
 
         public IStatement ParseStatement()
         {
-            Stack.PushCursor();
-            IStatement result;
-
             switch (Stack.Peek().Type)
             {
                 case TokenType.Val:
                 case TokenType.Var:
-                    result = ParseVariableDefinition();
-                    break;
+                    return ParseVariableDefinition();
 
                 case TokenType.For:
-                    result = ParseFor();
-                    break;
+                    return ParseFor();
 
                 case TokenType.While:
-                    result = ParseWhile();
-                    break;
+                    return ParseWhile();
 
                 default:
-                    var expr = ParseExpression();
-                    if (expr == null)
-                        result = null;
-                    else
-                        result = new ExpressionStatement
-                        {
-                            Expression = expr
-                        };
-                    break;
+                    return new ExpressionStatement
+                    {
+                        Expression = ParseExpression()
+                    };
             }
-
-            if (result == null)
-                Stack.PopCursor();
-            else
-                Stack.ForgetCursor();
-
-            return result;
         }
 
         public IExpression ParseExpression()
         {
-            Stack.PushCursor();
             IExpression result;
 
             switch (Stack.Peek().Type)
@@ -83,8 +69,7 @@ namespace Aura.Parsers
                 case TokenType.OpenParentheses:
                     Stack.Cursor++;
                     result = ParseExpression();
-                    if (Stack.Peek().Type == TokenType.CloseParentheses)
-                        Stack.Cursor++;
+                    ReadType(TokenType.CloseParentheses);
                     break;
 
                 case TokenType.If:
@@ -100,15 +85,8 @@ namespace Aura.Parsers
                     break;
 
                 default:
-                    return null;
+                    throw new ParserException("An expression", Stack.Peek());
             }
-
-            if (result == null)
-            {
-                Stack.PopCursor();
-                return null;
-            }
-            Stack.ForgetCursor();
             return Stack.Peek().IsBinaryOperator() ? ParseBinaryOperator(result) : result;
         }
     }

@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using Aura.Tokens;
 
 namespace Aura.Ast
 {
     public sealed class BinaryOperator : IExpression
     {
-        public static readonly Dictionary<char, int> Precedence = new Dictionary<char, int>
+        public static readonly Dictionary<TokenType, int> Precedence = new Dictionary<TokenType, int>
         {
-            {'+', 1},
-            {'-', 1},
-            {'*', 2},
-            {'/', 2},
-            {'%', 2}
+            {TokenType.Plus, 1},
+            {TokenType.Minus, 1},
+            {TokenType.Times, 2},
+            {TokenType.Divide, 2},
+            {TokenType.Modulo, 2}
         };
 
         public IExpression Left { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Aura.Ast;
 using Aura.Tokens;
+using Aura.Utils;
 
 namespace Aura.Parsers
 {
@@ -7,79 +8,37 @@ namespace Aura.Parsers
     {
         public WhileStatment ParseWhile()
         {
-            var token = Stack.Next();
-            if (token.Type != TokenType.While)
-                return null;
-
-            token = Stack.Next();
-            if (token.Type != TokenType.OpenParentheses)
-                return null;
-
-            var expr = ParseExpression();
-            if (expr == null)
-                return null;
+            ReadType(TokenType.While);
+            ReadType(TokenType.OpenParentheses);
 
             var result = new WhileStatment
             {
-                Expression = expr,
+                Expression = ParseExpression(),
             };
 
-            token = Stack.Next();
-            if (token.Type != TokenType.CloseParentheses)
-                return null;
-
-            var block = ParseBlock();
-            if (block == null)
-                return null;
-
-            result.Block = block;
-
+            ReadType(TokenType.CloseParentheses);
+            result.Block = ParseBlock();
             return result;
         }
 
         private IStatement ParseForeach()
         {
-            var token = Stack.Next();
-            if (token.Type != TokenType.Identifier)
-                return null;
-
             var stmt = new ForeachStatement
             {
-                Variable = token.Data
+                Variable = ReadType(TokenType.Identifier).Data
             };
 
-            token = Stack.Next();
-            if (token.Type != TokenType.In)
-                return null;
-
-            var expr = ParseExpression();
-            if (expr == null)
-                return null;
-
-            stmt.Expression = expr;
-
-            token = Stack.Next();
-            if (token.Type != TokenType.CloseParentheses)
-                return null;
-
-            var block = ParseBlock();
-            if (block == null)
-                return null;
-
-            stmt.Block = block;
-
+            ReadType(TokenType.In);
+            stmt.Expression = ParseExpression();
+            ReadType(TokenType.CloseParentheses);
+            stmt.Block = ParseBlock();
             return stmt;
         }
 
         public IStatement ParseFor()
         {
-            var token = Stack.Next();
-            if (token.Type != TokenType.For)
-                return null;
-
-            token = Stack.Next();
-            if (token.Type != TokenType.OpenParentheses)
-                return null;
+            ReadType(TokenType.For);
+            ReadType(TokenType.OpenParentheses);
 
             Stack.Cursor++;
             if (Stack.Peek().Type == TokenType.In)
@@ -89,45 +48,17 @@ namespace Aura.Parsers
             }
             Stack.Cursor--;
 
-            var stmt = ParseStatement();
-            if (stmt == null)
-                return null;
-
             var result = new ForStatement
             {
-                Section1 = stmt
+                Section1 = ParseStatement()
             };
 
-            token = Stack.Next();
-            if (token.Type != TokenType.Semicolon)
-                return null;
-
-            stmt = ParseStatement();
-            if (stmt == null)
-                return null;
-
-            result.Section2 = stmt;
-
-            token = Stack.Next();
-            if (token.Type != TokenType.Semicolon)
-                return null;
-
-            stmt = ParseStatement();
-            if (stmt == null)
-                return null;
-
-            result.Section3 = stmt;
-
-            token = Stack.Next();
-            if (token.Type != TokenType.CloseParentheses)
-                return null;
-
-            var block = ParseBlock();
-            if (block == null)
-                return null;
-
-            result.Block = block;
-
+            ReadType(TokenType.Semicolon);
+            result.Section2 = ParseStatement();
+            ReadType(TokenType.Semicolon);
+            result.Section3 = ParseStatement();
+            ReadType(TokenType.CloseParentheses);
+            result.Block = ParseBlock();
             return result;
         }
 
@@ -135,38 +66,26 @@ namespace Aura.Parsers
         {
             var token = Stack.Next();
             if (token.Type != TokenType.Var && token.Type != TokenType.Val)
-                return null;
+                throw new ParserException("Var or Val", token);
 
             var statement = new VariableStatement
             {
                 Immutable = token.Type == TokenType.Val,
+                Name = ReadType(TokenType.Identifier).Data,
             };
 
-            token = Stack.Next();
-            if (token.Type != TokenType.Identifier)
-                return null;
-
-            statement.Name = token.Data;
-
             token = Stack.Peek();
-
             if (token.Type == TokenType.Colon)
             {
                 Stack.Cursor++;
-                token = Stack.Next();
-                if (token.Type != TokenType.Identifier)
-                    return null;
-                statement.Type = token.Data;
+                statement.Type = ReadType(TokenType.Identifier).Data;
                 token = Stack.Peek();
             }
 
             if (token.Type == TokenType.Equals)
             {
                 Stack.Cursor++;
-                var expr = ParseExpression();
-                if (expr == null)
-                    return null;
-                statement.Assignment = expr;
+                statement.Assignment = ParseExpression();
             }
 
             return statement;

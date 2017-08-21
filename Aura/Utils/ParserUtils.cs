@@ -7,12 +7,12 @@ namespace Aura.Utils
     {
         public static int GetPrecedence(this Token token)
         {
-            return token.IsBinaryOperator() ? BinaryOperator.Precedence[token.Data[0]] : 0;
+            return IsBinaryOperator() ? BinaryOperator.Precedence[token.Type] : 0;
         }
 
         public static bool IsBinaryOperator(this Token token)
         {
-            return token.Type >= TokenType.Plus && token.Type <= TokenType.Modulo;
+            return BinaryOperator.Precedence.ContainsKey(token.Type);
         }
     }
 }
