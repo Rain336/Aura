@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -10,11 +11,11 @@ namespace Aura
 {
     public sealed class Lexer
     {
-        private static readonly HashSet<CharTokenMatcher> Chars = new HashSet<CharTokenMatcher>();
+        private static readonly HashSet<TokenMatcher<char>> Chars = new HashSet<TokenMatcher<char>>();
 
-        private static readonly HashSet<StringTokenMatcher> Matchers = new HashSet<StringTokenMatcher>();
+        private static readonly HashSet<TokenMatcher<string>> Strings = new HashSet<TokenMatcher<string>>();
 
-        private static readonly HashSet<RegexTokenMatcher> Regexs = new HashSet<RegexTokenMatcher>();
+        private static readonly HashSet<TokenMatcher<Regex>> Regexs = new HashSet<TokenMatcher<Regex>>();
 
         public static void AddToken(TokenType type, string matcher, bool regex = false)
         {
@@ -22,11 +23,11 @@ namespace Aura
                 throw new ArgumentNullException(nameof(matcher));
 
             if (regex)
-                Regexs.Add(new RegexTokenMatcher(type, matcher));
+                Regexs.Add(new TokenMatcher<Regex>(type, new Regex(matcher)));
             else if (matcher.Length == 1)
-                Chars.Add(new CharTokenMatcher(type, matcher[0]));
+                Chars.Add(new TokenMatcher<char>(type, matcher[0]));
             else
-                Matchers.Add(new StringTokenMatcher(type, matcher));
+                Strings.Add(new TokenMatcher<string>(type, matcher));
         }
 
         static Lexer()
@@ -61,8 +62,6 @@ namespace Aura
         public int Line;
         public int Column;
         public readonly TextReader Reader;
-        private string _identifier = "";
-        private bool _spaced;
 
         public Lexer(TextReader reader)
         {
@@ -75,55 +74,20 @@ namespace Aura
         public int Read()
         {
             var s = Reader.Read();
-            Column++;
-            while (s != -1 && IsIgnored((char) s))
+            if (s != -1 && s == '\n')
             {
-                s = Reader.Read();
-                Column++;
-                _spaced = true;
+                Line++;
+                Column = 0;
             }
+            else Column++;
             return s;
-        }
-
-        public int Peek()
-        {
-            var s = Reader.Peek();
-            while (s != -1 && IsIgnored((char) s))
-            {
-                Reader.Read();
-                s = Reader.Peek();
-            }
-            return s;
-        }
-
-        public string ReadWhile(Func<char, bool> predicate, string prefix = "")
-        {
-            var c = Reader.Peek();
-            while (c != -1 && predicate((char) c))
-            {
-                Reader.Read();
-                prefix += (char) c;
-                c = Reader.Peek();
-            }
-            return prefix;
-        }
-
-        private bool IsIgnored(char c)
-        {
-            if (c != '\n')
-                return c == ' ' || c == '\t' || c == '\r';
-
-            Line++;
-            Column = 0;
-            return true;
         }
 
         private bool CreateCharToken(ICollection<Token> result, char c)
         {
-            var matcher = Chars.FirstOrDefault(m => m.Char == c);
+            var matcher = Chars.FirstOrDefault(m => m.Value == c);
             if (matcher == null) return false;
-            CommitIdentifier(result);
-            result.Add(new Token(matcher.Type, matcher.Char.ToString())
+            result.Add(new Token(matcher.Type, matcher.Value.ToString())
             {
                 Column = Column - 1,
                 Line = Line
@@ -131,94 +95,71 @@ namespace Aura
             return true;
         }
 
-        private bool CreateStringToken(ICollection<Token> result, string input)
+        private string ReadWord(char c)
         {
-            foreach (var matcher in Matchers)
+            var buffer = c.ToString();
+            var i = Reader.Peek();
+            while (i != -1 && char.IsLetterOrDigit((char) i))
             {
-                if (!matcher.Match(input)) continue;
-
-                if (!matcher.CreateToken(ref input, this, out var token)) continue;
-
-                token.Column = Column - token.Data.Length;
-                token.Line = Line;
-                CommitIdentifier(result);
-                result.Add(token);
-                return true;
+                Read();
+                buffer += (char) i;
+                i = Reader.Peek();
             }
-            return false;
-        }
-
-        private bool CreateRegexToken(ICollection<Token> result, string buffer)
-        {
-            var matcher = Regexs.FirstOrDefault(m => m.Match(buffer));
-            if (matcher == null) return false;
-            if (!matcher.CreateToken(buffer, this, out var token)) return false;
-            CommitIdentifier(result);
-            result.Add(token);
-            return true;
-        }
-
-        private void CommitIdentifier(ICollection<Token> result)
-        {
-            if (string.IsNullOrEmpty(_identifier)) return;
-            result.Add(new Token(TokenType.Identifier, _identifier)
-            {
-                Column = Column - _identifier.Length,
-                Line = Line
-            });
-            _identifier = "";
+            return buffer.Trim();
         }
 
         public List<Token> Lex()
         {
             var result = new List<Token>();
-            var buffer = "";
 
             while (true)
             {
                 var c = Read();
                 if (c == -1)
                     break;
-                buffer += (char) c;
 
-                if (_spaced && buffer.Length != 1)
+                if (CreateCharToken(result, (char) c)) continue;
+
+                var buffer = ReadWord((char) c);
+                if (buffer.Length == 0) continue;
+                var found = false;
+
+                foreach (var matcher in Regexs)
                 {
-                    result.Add(new Token(TokenType.Identifier, buffer.Remove(buffer.Length - 1))
+                    if (matcher.Value.Match(buffer).Length != buffer.Length) continue;
+
+                    found = true;
+                    result.Add(new Token(matcher.Type, buffer)
                     {
-                        Column = Column - buffer.Length + 1,
-                        Line = Line
+                        Line = Line,
+                        Column = Column - buffer.Length
                     });
-                    buffer = buffer.Substring(buffer.Length - 1);
+                    break;
                 }
-                _spaced = false;
 
-                if (CreateRegexToken(result, buffer))
+                if (found) continue;
+
+                foreach (var matcher in Strings)
                 {
-                    buffer = "";
-                    continue;
+                    if (matcher.Value != buffer) continue;
+
+                    found = true;
+                    result.Add(new Token(matcher.Type, matcher.Value)
+                    {
+                        Line = Line,
+                        Column = Column - matcher.Value.Length
+                    });
+                    break;
                 }
 
-                if (buffer.Length == 1 && CreateCharToken(result, buffer[0]))
+                if (found) continue;
+
+                result.Add(new Token(TokenType.Identifier, buffer)
                 {
-                    buffer = "";
-                    continue;
-                }
-
-                if (CreateStringToken(result, buffer))
-                {
-                    buffer = "";
-                    continue;
-                }
-
-                _identifier += buffer;
-                buffer = "";
+                    Line = Line,
+                    Column = Column - buffer.Length
+                });
             }
-
-            if (_identifier.Length != 0)
-                CommitIdentifier(result);
-
-            if (buffer.Length != 0)
-                throw new LexerException("Unknowen Token: '" + buffer + '\'');
 
             return result;
         }
