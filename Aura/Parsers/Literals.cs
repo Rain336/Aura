@@ -1,4 +1,4 @@
-﻿using Aura.Ast;
+﻿using Aura.Ast.Literals;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -24,23 +24,16 @@ namespace Aura.Parsers
 
         public StringLiteral ParseStringLiteral()
         {
-            return new StringLiteral
-            {
-                Value = ReadType(TokenType.String).Data
-            };
+            return new StringLiteral(ReadType(TokenType.String).Data);
         }
 
-        public NumericLiteral ParseNumericLiteral()
+        public NumberLiteral ParseNumericLiteral()
         {
             var token = Stack.Next();
             if (token.Type != TokenType.Decimal && token.Type != TokenType.Hexadecimal)
                 throw new ParserException("Numeric Literal", token);
 
-            return new NumericLiteral
-            {
-                Value = token.Data,
-                Hexadecimal = token.Type == TokenType.Hexadecimal
-            };
+            return new NumberLiteral(token.Data, token.Type == TokenType.Hexadecimal);
         }
     }
 }

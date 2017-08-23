@@ -1,5 +1,6 @@
 ﻿using System;
-using Aura.Ast;
+using Aura.Ast.Expressions;
+using Aura.Ast.Statements;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -37,10 +38,7 @@ namespace Aura.Parsers
                     return ParseWhile();
 
                 default:
-                    return new ExpressionStatement
-                    {
-                        Expression = ParseExpression()
-                    };
+                    return new ExpressionStatement(ParseExpression());
             }
         }
 

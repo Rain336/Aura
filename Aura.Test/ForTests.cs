@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Aura.Ast;
+using Aura.Ast.Statements;
 using Aura.Parsers;
 
 namespace Aura.Test

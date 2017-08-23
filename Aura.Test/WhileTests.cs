@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using Aura.Ast;
+using Aura.Ast.Expressions;
+using Aura.Ast.Statements;
 using Aura.Parsers;
 
 namespace Aura.Test
@@ -15,7 +17,7 @@ namespace Aura.Test
             Assert.AreEqual(0, stmt.Block.Statements.Count);
         }
 
-        private static WhileStatment Parse(string input)
+        private static WhileStatement Parse(string input)
         {
             var stack = new TokenStack(new Lexer(new StringReader(input)));
             Console.WriteLine(stack.ToString());

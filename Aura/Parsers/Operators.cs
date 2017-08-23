@@ -1,4 +1,4 @@
-﻿using Aura.Ast;
+﻿using Aura.Ast.Expressions;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -29,12 +29,7 @@ namespace Aura.Parsers
                         throw new ParserException("Expected Operator", token);
                 }
 
-                left = new BinaryOperator
-                {
-                    Left = left,
-                    Operator = op.Data[0],
-                    Right = right
-                };
+                left = new BinaryOperator(left, op.Type, right);
             }
 
             return left;
@@ -46,11 +41,7 @@ namespace Aura.Parsers
             if (token.Type != TokenType.Plus && token.Type != TokenType.Minus)
                 throw new ParserException("Plus or Minus", token);
 
-            return new UnaryOperator
-            {
-                Operator = token.Data[0],
-                Number = ParseExpression()
-            };
+            return new UnaryOperator(ParseExpression(), token.Type);
         }
     }
 }

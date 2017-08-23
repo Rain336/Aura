@@ -1,28 +1,31 @@
-﻿using Aura.Ast;
+﻿using Aura.Ast.Expressions;
 using Aura.Tokens;
+using Aura.Utils;
 
 namespace Aura.Parsers
 {
     public sealed partial class Parser
     {
-        public VariableExpression ParseVariable()
+        public VariableAccessExpression ParseVariable()
         {
-            return new VariableExpression
-            {
-                Name = ReadType(TokenType.Identifier).Data
-            };
+            return new VariableAccessExpression(ReadType(TokenType.Identifier).Data);
         }
 
-        public BlockExpression ParseBlock()
+        public TypeElement ParseType()
+        {
+            return TypeElement.FromString(ReadType(TokenType.Identifier).Data);
+        }
+
+        public Block ParseBlock()
         {
             ReadType(TokenType.OpenBrace);
-            var result = new BlockExpression();
+            var result = new Block();
 
             while (true)
             {
                 if (Stack.Peek().Type == TokenType.CloseBrace)
                     break;
-                result.Statements.Add(ParseStatement());
+                result.WithStatments(ParseStatement());
             }
 
             Stack.Cursor++;
@@ -33,25 +36,18 @@ namespace Aura.Parsers
         {
             ReadType(TokenType.If);
             ReadType(TokenType.OpenParentheses);
-
-            var result = new IfExpression
-            {
-                Condition = ParseExpression()
-            };
-
+            var condition = ParseExpression();
             ReadType(TokenType.CloseParentheses);
-
-            result.Block = ParseBlock();
-
-            if (Stack.Peek().Type != TokenType.Else) return result;
+            var block = ParseBlock();
+            if (Stack.Peek().Type != TokenType.Else) return new IfExpression(condition, block, null, null);
 
             Stack.Cursor++;
             if (Stack.Peek().Type == TokenType.If)
-                result.ElseIf = ParseIf();
-            else if (Stack.Peek().Type == TokenType.OpenBrace)
-                result.Else = ParseBlock();
+                return new IfExpression(condition, block, ParseIf(), null);
+            if (Stack.Peek().Type == TokenType.OpenBrace)
+                return new IfExpression(condition, block, null, ParseBlock());
 
-            return result;
+            throw new ParserException("Expected 'if' or '{'", Stack.Peek());
         }
     }
 }
