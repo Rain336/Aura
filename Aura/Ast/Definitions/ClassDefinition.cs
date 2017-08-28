@@ -8,14 +8,15 @@ namespace Aura.Ast.Definitions
     public sealed class ClassDefinition : IAstElement
     {
         public IAstElement Parent { get; set; }
-        public readonly AccessModifier AccessModifier;
+        public readonly Modifier AccessModifier;
         public readonly string Name;
         public readonly TypeElement Base;
+        public readonly bool IsActor;
         private readonly List<Modifier> _modifiers = new List<Modifier>();
         private readonly List<FunctionDefinition> _functions = new List<FunctionDefinition>();
         private readonly List<VariableDefinition> _variables = new List<VariableDefinition>();
 
-        public ClassDefinition(AccessModifier accessModifier, string name, TypeElement @base)
+        public ClassDefinition(Modifier accessModifier, string name, TypeElement @base, bool actor)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(nameof(name));
@@ -27,6 +28,7 @@ namespace Aura.Ast.Definitions
             AccessModifier = accessModifier;
             Name = name;
             Base = @base;
+            IsActor = actor;
         }
 
         public ClassDefinition WithModifiers(Modifier modifier)

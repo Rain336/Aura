@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Aura.Ast;
 using Aura.Ast.Expressions;
 using Aura.Ast.Statements;
 using Aura.Tokens;
@@ -21,6 +23,55 @@ namespace Aura.Parsers
             if (token.Type != type)
                 throw new ParserException(Enum.GetName(typeof(TokenType), type), token);
             return token;
+        }
+
+        public CompilationUnit ParseCompilationUnit()
+        {
+            var unit = new CompilationUnit();
+            var token = Stack.Peek();
+
+            var modifiers = new List<Modifier>();
+            while (token.Type != TokenType.Unknowen)
+            {
+                if (token.IsModifier())
+                {
+                    modifiers.Add(token.ToModifier());
+                    Stack.Cursor++;
+                    token = Stack.Peek();
+                    continue;
+                }
+
+                switch (token.Type)
+                {
+                    case TokenType.Import:
+                        unit.WithImports(ParseImportDirective());
+                        break;
+
+                    case TokenType.Function:
+                        unit.WithFunctions(ParseFunctionDefinition(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    case TokenType.Class:
+                    case TokenType.Actor:
+                        unit.WithClasses(ParseClassDefinition(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    default:
+                        throw new ParserException("import, class, namespace, interface or Enum",
+                            token, "Unexpected Token.");
+                }
+                token = Stack.Peek();
+            }
+
+            return unit;
+        }
+
+        public ImportDirective ParseImportDirective()
+        {
+            ReadType(TokenType.Import);
+            return new ImportDirective(ReadType(TokenType.Identifier).Data);
         }
 
         public IStatement ParseStatement()

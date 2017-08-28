@@ -10,6 +10,8 @@
         Times,
         Divide,
         Modulo,
+        GreaterThan,
+        LessThan,
         
         // Punctuation
         OpenParentheses,
@@ -19,6 +21,7 @@
         Colon,
         Equals,
         Semicolon,
+        Comma,
         
         // Keyword
         Var,
@@ -29,6 +32,20 @@
         For,
         Foreach,
         In,
+        Import,
+        Function,
+        Class,
+        Actor,
+        Interface,
+        
+        // Modifier
+        Public,
+        Protected,
+        Private,
+        Internal,
+        Extern,
+        Unsafe,
+        Static,
         
         // Literals
         Decimal,

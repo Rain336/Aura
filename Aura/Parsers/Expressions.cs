@@ -13,7 +13,20 @@ namespace Aura.Parsers
 
         public TypeElement ParseType()
         {
-            return TypeElement.FromString(ReadType(TokenType.Identifier).Data);
+            var type = ReadType(TokenType.Identifier).Data;
+            if (Stack.Peek().Type != TokenType.GreaterThan) return TypeElement.FromString(type);
+            Stack.Cursor++;
+
+            var result = new GenericTypeElement(type);
+
+            while (Stack.Peek().Type != TokenType.LessThan)
+            {
+                result.WithGenerics(ParseType());
+                if (Stack.Peek().Type == TokenType.Comma)
+                    Stack.Cursor++;
+            }
+            Stack.Cursor++;
+            return result;
         }
 
         public Block ParseBlock()

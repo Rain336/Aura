@@ -37,6 +37,8 @@ namespace Aura
             AddToken(TokenType.Times, "*");
             AddToken(TokenType.Divide, "/");
             AddToken(TokenType.Modulo, "%");
+            AddToken(TokenType.GreaterThan, "<");
+            AddToken(TokenType.LessThan, ">");
 
             AddToken(TokenType.OpenParentheses, "(");
             AddToken(TokenType.OpenBrace, "{");
@@ -45,6 +47,7 @@ namespace Aura
             AddToken(TokenType.Colon, ":");
             AddToken(TokenType.Equals, "=");
             AddToken(TokenType.Semicolon, ";");
+            AddToken(TokenType.Comma, ",");
 
             AddToken(TokenType.Var, "var");
             AddToken(TokenType.Val, "val");
@@ -53,6 +56,19 @@ namespace Aura
             AddToken(TokenType.In, "in");
             AddToken(TokenType.For, "for");
             AddToken(TokenType.While, "while");
+            AddToken(TokenType.Import, "import");
+            AddToken(TokenType.Function, "function");
+            AddToken(TokenType.Class, "class");
+            AddToken(TokenType.Actor, "actor");
+            AddToken(TokenType.Interface, "interface");
+            
+            AddToken(TokenType.Public, "public");
+            AddToken(TokenType.Protected, "protected");
+            AddToken(TokenType.Private, "private");
+            AddToken(TokenType.Internal, "internal");
+            AddToken(TokenType.Extern, "extern");
+            AddToken(TokenType.Unsafe, "unsafe");
+            AddToken(TokenType.Static, "static");
 
             AddToken(TokenType.Decimal, "[0-9]+", true);
             AddToken(TokenType.Hexadecimal, "0x[0-9A-Fa-f]+", true);
