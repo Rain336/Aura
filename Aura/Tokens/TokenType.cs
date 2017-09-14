@@ -3,7 +3,7 @@
     public enum TokenType
     {
         Unknowen,
-        
+
         // Operator
         Plus,
         Minus,
@@ -12,7 +12,7 @@
         Modulo,
         GreaterThan,
         LessThan,
-        
+
         // Punctuation
         OpenParentheses,
         OpenBrace,
@@ -22,7 +22,7 @@
         Equals,
         Semicolon,
         Comma,
-        
+
         // Keyword
         Var,
         Val,
@@ -37,7 +37,8 @@
         Class,
         Actor,
         Interface,
-        
+        Namespace,
+
         // Modifier
         Public,
         Protected,
@@ -46,12 +47,12 @@
         Extern,
         Unsafe,
         Static,
-        
+
         // Literals
         Decimal,
         Hexadecimal,
         String,
-        
+
         Identifier
     }
 }

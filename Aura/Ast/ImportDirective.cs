@@ -1,18 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Aura.Ast
 {
-    public sealed class ImportDirective : IAstElement
+    public sealed class ImportDirective
     {
-        public IAstElement Parent { get; set; }
-        public readonly string Namespace;
-
-        public ImportDirective(string ns)
-        {
-            if(string.IsNullOrEmpty(ns))
-                throw new ArgumentNullException(nameof(ns));
-            
-            Namespace = ns;
-        }
+        public string Namespace { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Aura.Ast.Expressions;
+﻿using Aura.Ast;
+using Aura.Ast.Expressions;
+using Aura.Ast.Statments;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -8,20 +10,27 @@ namespace Aura.Parsers
     {
         public VariableAccessExpression ParseVariable()
         {
-            return new VariableAccessExpression(ReadType(TokenType.Identifier).Data);
+            return new VariableAccessExpression
+            {
+                Name = ReadType(TokenType.Identifier).Data,
+                //ResultType = 
+            };
         }
 
-        public TypeElement ParseType()
+        public IType ParseType()
         {
             var type = ReadType(TokenType.Identifier).Data;
-            if (Stack.Peek().Type != TokenType.GreaterThan) return TypeElement.FromString(type);
+            if (Stack.Peek().Type != TokenType.GreaterThan) return new SimpleType { Text = type };
             Stack.Cursor++;
 
-            var result = new GenericTypeElement(type);
+            var result = new GenericType
+            {
+                Text = type
+            };
 
             while (Stack.Peek().Type != TokenType.LessThan)
             {
-                result.WithGenerics(ParseType());
+                result.Prameters.Add(ParseType());
                 if (Stack.Peek().Type == TokenType.Comma)
                     Stack.Cursor++;
             }
@@ -34,12 +43,21 @@ namespace Aura.Parsers
             ReadType(TokenType.OpenBrace);
             var result = new Block();
 
-            while (true)
+            while (Stack.Peek().Type != TokenType.CloseBrace)
             {
-                if (Stack.Peek().Type == TokenType.CloseBrace)
-                    break;
-                result.WithStatments(ParseStatement());
+                result.Statments.Add(ParseStatement());
             }
+
+            if (result.Statments.Count > 0)
+            {
+                var last = result.Statments[result.Statments.Count - 1];
+                if (last is ExpressionStatment)
+                {
+                    result.ResultType = ((ExpressionStatment)last).Expression.ResultType;
+                }
+                else result.ResultType = SimpleType.Void;
+            }
+            else result.ResultType = SimpleType.Void;
 
             Stack.Cursor++;
             return result;
@@ -47,20 +65,31 @@ namespace Aura.Parsers
 
         public IfExpression ParseIf()
         {
+            var result = new IfExpression();
             ReadType(TokenType.If);
             ReadType(TokenType.OpenParentheses);
-            var condition = ParseExpression();
+            result.Condition = ParseExpression();
             ReadType(TokenType.CloseParentheses);
-            var block = ParseBlock();
-            if (Stack.Peek().Type != TokenType.Else) return new IfExpression(condition, block, null, null);
+            result.Block = ParseBlock();
+            if (Stack.Peek().Type != TokenType.Else) return result;
 
             Stack.Cursor++;
-            if (Stack.Peek().Type == TokenType.If)
-                return new IfExpression(condition, block, ParseIf(), null);
-            if (Stack.Peek().Type == TokenType.OpenBrace)
-                return new IfExpression(condition, block, null, ParseBlock());
-
-            throw new ParserException("Expected 'if' or '{'", Stack.Peek());
+            var token = Stack.Peek();
+            if (token.Type == TokenType.If)
+            {
+                result.ElseIf = ParseIf();
+                if (result.ResultType != SimpleType.Void && result.ElseIf.ResultType != result.ResultType)
+                    throw new ParserException("Types in If and ElseIf do not match", token);
+            }
+            else if (token.Type == TokenType.OpenBrace)
+            {
+                result.ElseBlock = ParseBlock();
+                if (result.ResultType != SimpleType.Void && result.ElseBlock.ResultType != result.ResultType)
+                    throw new ParserException("Types in If-Block and Else-Block do not match", token);
+            }
+            else
+                throw new ParserException("Expected 'if' or '{'", token);
+            return result;
         }
     }
 }

@@ -1,6 +1,5 @@
-﻿using Aura.Ast.Definitions;
-using Aura.Ast.Expressions;
-using Aura.Ast.Statements;
+﻿using Aura.Ast;
+using Aura.Ast.Statments;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -8,27 +7,63 @@ namespace Aura.Parsers
 {
     public sealed partial class Parser
     {
+        public VariableStatment ParseVariableStatment()
+        {
+            var variable = new VariableStatment();
+            var token = Stack.Next();
+            if (token.Type != TokenType.Var && token.Type != TokenType.Val)
+                throw new ParserException("Var or Val", token);
+
+            variable.IsImutable = token.Type == TokenType.Val;
+            variable.Name = ReadType(TokenType.Identifier).Data;
+
+            if (Stack.Peek().Type == TokenType.Colon)
+            {
+                Stack.Cursor++;
+                variable.Type = ParseType();
+            }
+
+            if (Stack.Peek().Type == TokenType.Equals)
+            {
+                Stack.Cursor++;
+                variable.Assignment = ParseExpression();
+            }
+
+            if (variable.Type == null && variable.Assignment != null)
+                variable.Type = variable.Assignment.ResultType;
+            if (variable.Assignment == null && variable.Type == null)
+                throw new ParserException("Cannot deduce Type!", token);
+            if (variable.IsImutable && variable.Assignment == null)
+                throw new ParserException("Immutable variable must be asigned.", token);
+
+            return variable;
+        }
+
         public WhileStatement ParseWhile()
         {
+            var result = new WhileStatement();
             ReadType(TokenType.While);
             ReadType(TokenType.OpenParentheses);
-            var expr = ParseExpression();
+            result.Condition = ParseExpression();
             ReadType(TokenType.CloseParentheses);
-            var block = ParseBlock();
-            return new WhileStatement(expr, block);
+            result.Block = ParseBlock();
+            return result;
         }
 
-        private IStatement ParseForeach()
+        private IStatment ParseForeach()
         {
-            var name = ReadType(TokenType.Identifier).Data;
+            var fe = new ForeachStatment
+            {
+                Variable = ReadType(TokenType.Identifier).Data
+            };
             ReadType(TokenType.In);
-            var expr = ParseExpression();
+            fe.Expression = ParseExpression();
             ReadType(TokenType.CloseParentheses);
-            var block = ParseBlock();
-            return new ForeachStatement(name, expr, block);
+            fe.Block = ParseBlock();
+            return fe;
         }
 
-        public IStatement ParseFor()
+        public IStatment ParseFor()
         {
             ReadType(TokenType.For);
             ReadType(TokenType.OpenParentheses);
@@ -41,45 +76,17 @@ namespace Aura.Parsers
             }
             Stack.Cursor--;
 
-            var section1 = ParseStatement();
+            var f = new ForStatment
+            {
+                Section1 = ParseStatement()
+            };
             ReadType(TokenType.Semicolon);
-            var section2 = ParseStatement();
+            f.Section2 = ParseStatement();
             ReadType(TokenType.Semicolon);
-            var section3 = ParseStatement();
+            f.Section3 = ParseStatement();
             ReadType(TokenType.CloseParentheses);
-            var block = ParseBlock();
-            return new ForStatement(section1, section2, section3, block);
-        }
-
-        public VariableDefinition ParseVariableDefinition()
-        {
-            var token = Stack.Next();
-            if (token.Type != TokenType.Var && token.Type != TokenType.Val)
-                throw new ParserException("Var or Val", token);
-
-            var immutable = token.Type == TokenType.Val;
-            var name = ReadType(TokenType.Identifier).Data;
-            TypeElement type = null;
-
-            if (Stack.Peek().Type == TokenType.Colon)
-            {
-                Stack.Cursor++;
-                type = ParseType();
-            }
-
-            IExpression expr = null;
-            if (Stack.Peek().Type == TokenType.Equals)
-            {
-                Stack.Cursor++;
-                expr = ParseExpression();
-            }
-
-            if (expr == null && type == null)
-                throw new ParserException("Cannot deduce Type!", token);
-            if (immutable && expr == null)
-                throw new ParserException("Immutable variable must be asigned.", token);
-
-            return new VariableDefinition(immutable, name, type, expr);
+            f.Block = ParseBlock();
+            return f;
         }
     }
 }

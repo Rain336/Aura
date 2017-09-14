@@ -1,7 +1,11 @@
-﻿namespace Aura.Ast.Expressions
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Aura.Ast.Expressions
 {
-    public interface IExpression : IAstElement
+    public interface IExpression
     {
-        TypeElement Type { get; set; }
+        IType ResultType { get; }
     }
 }

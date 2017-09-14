@@ -2,19 +2,29 @@
 using Aura.Ast;
 using Aura.Ast.Expressions;
 using Aura.Tokens;
+using System.Collections.Generic;
 
 namespace Aura.Utils
 {
     public static class ParserUtils
     {
+        private static readonly Dictionary<TokenType, int> Precedence = new Dictionary<TokenType, int>
+        {
+            { TokenType.Plus, 10 },
+            { TokenType.Minus, 10 },
+            { TokenType.Times, 20 },
+            { TokenType.Divide, 20 },
+            { TokenType.Modulo, 20 },
+        };
+
         public static int GetPrecedence(this Token token)
         {
-            return token.IsBinaryOperator() ? BinaryOperator.Precedence[token.Type] : 0;
+            return token.IsBinaryOperator() ? Precedence[token.Type] : 0;
         }
 
         public static bool IsBinaryOperator(this Token token)
         {
-            return BinaryOperator.Precedence.ContainsKey(token.Type);
+            return Precedence.ContainsKey(token.Type);
         }
 
         public static bool IsModifier(this Token token)
@@ -24,7 +34,7 @@ namespace Aura.Utils
 
         public static bool IsAccessModifier(this Modifier modifier)
         {
-            return modifier >= Modifier.Public && modifier <= Modifier.Internal;
+            return modifier >= Modifier.Public && modifier <= Modifier.Private;
         }
 
         public static Modifier ToModifier(this Token token)
@@ -39,9 +49,6 @@ namespace Aura.Utils
 
                 case TokenType.Private:
                     return Modifier.Private;
-
-                case TokenType.Internal:
-                    return Modifier.Internal;
 
                 case TokenType.Extern:
                     return Modifier.Extern;

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using Aura.Ast;
 using Aura.Ast.Expressions;
-using Aura.Ast.Statements;
+using Aura.Ast.Declarations;
+using Aura.Ast.Statments;
 using Aura.Tokens;
 using Aura.Utils;
 
@@ -30,6 +31,12 @@ namespace Aura.Parsers
             var unit = new CompilationUnit();
             var token = Stack.Peek();
 
+            while (token.Type == TokenType.Import)
+            {
+                unit.Imports.Add(ParseImportDirective());
+                token = Stack.Peek();
+            }
+
             var modifiers = new List<Modifier>();
             while (token.Type != TokenType.Unknowen)
             {
@@ -43,18 +50,23 @@ namespace Aura.Parsers
 
                 switch (token.Type)
                 {
-                    case TokenType.Import:
-                        unit.WithImports(ParseImportDirective());
+                    case TokenType.Namespace:
+                        unit.Namespaces.Add(ParseNamespaceDeclaration());
                         break;
 
                     case TokenType.Function:
-                        unit.WithFunctions(ParseFunctionDefinition(modifiers));
+                        unit.Functions.Add(ParseFunctionDeclaration(modifiers));
                         modifiers.Clear();
                         break;
 
                     case TokenType.Class:
                     case TokenType.Actor:
-                        unit.WithClasses(ParseClassDefinition(modifiers));
+                        unit.Classes.Add(ParseClassDeclaration(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    case TokenType.Interface:
+                        unit.Interfaces.Add(ParseInterfaceDeclaration(modifiers));
                         modifiers.Clear();
                         break;
 
@@ -68,19 +80,66 @@ namespace Aura.Parsers
             return unit;
         }
 
+        public NamespaceDeclaration ParseNamespaceDeclaration()
+        {
+            var ns = new NamespaceDeclaration();
+            var token = Stack.Peek();
+
+            var modifiers = new List<Modifier>();
+            while (token.Type != TokenType.Unknowen)
+            {
+                if (token.IsModifier())
+                {
+                    modifiers.Add(token.ToModifier());
+                    Stack.Cursor++;
+                    token = Stack.Peek();
+                    continue;
+                }
+
+                switch (token.Type)
+                {
+                    case TokenType.Function:
+                        ns.Functions.Add(ParseFunctionDeclaration(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    case TokenType.Class:
+                    case TokenType.Actor:
+                        ns.Classes.Add(ParseClassDeclaration(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    case TokenType.Interface:
+                        ns.Interfaces.Add(ParseInterfaceDeclaration(modifiers));
+                        modifiers.Clear();
+                        break;
+
+                    default:
+                        throw new ParserException("import, class, namespace, interface or Enum",
+                            token, "Unexpected Token.");
+                }
+                token = Stack.Peek();
+            }
+
+            return ns;
+        }
+
         public ImportDirective ParseImportDirective()
         {
             ReadType(TokenType.Import);
-            return new ImportDirective(ReadType(TokenType.Identifier).Data);
+            return new ImportDirective
+            {
+                Namespace = ReadType(TokenType.Identifier).Data
+            };
         }
 
-        public IStatement ParseStatement()
+        public IStatment ParseStatement()
         {
             switch (Stack.Peek().Type)
             {
                 case TokenType.Val:
                 case TokenType.Var:
-                    return ParseVariableDefinition();
+                    return ParseVariableStatment();
 
                 case TokenType.For:
                     return ParseFor();
@@ -89,7 +148,10 @@ namespace Aura.Parsers
                     return ParseWhile();
 
                 default:
-                    return new ExpressionStatement(ParseExpression());
+                    return new ExpressionStatment
+                    {
+                        Expression = ParseExpression()
+                    };
             }
         }
 
@@ -104,15 +166,13 @@ namespace Aura.Parsers
                     result = ParseNumericLiteral();
                     break;
 
-                case TokenType.Plus:
-                case TokenType.Minus:
-                case TokenType.Times:
-                case TokenType.Divide:
-                    result = ParseUnaryOperator();
-                    break;
-
                 case TokenType.String:
                     result = ParseStringLiteral();
+                    break;
+
+                case TokenType.Plus:
+                case TokenType.Minus:
+                    result = ParseUnaryOperator();
                     break;
 
                 case TokenType.OpenParentheses:

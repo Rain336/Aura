@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using Aura.Tokens;
 using Aura.Utils;
@@ -17,6 +16,14 @@ namespace Aura
 
         private static readonly HashSet<TokenMatcher<Regex>> Regexs = new HashSet<TokenMatcher<Regex>>();
 
+        private static readonly HashSet<char> IgnoredChars = new HashSet<char>
+        {
+            ' ',
+            '\t',
+            '\r',
+            '\n',
+        };
+
         public static void AddToken(TokenType type, string matcher, bool regex = false)
         {
             if (string.IsNullOrWhiteSpace(matcher))
@@ -25,9 +32,17 @@ namespace Aura
             if (regex)
                 Regexs.Add(new TokenMatcher<Regex>(type, new Regex(matcher)));
             else if (matcher.Length == 1)
+            {
                 Chars.Add(new TokenMatcher<char>(type, matcher[0]));
+                IgnoredChars.Add(matcher[0]);
+            }
             else
                 Strings.Add(new TokenMatcher<string>(type, matcher));
+        }
+
+        public static bool IsIgnored(char c)
+        {
+            return IgnoredChars.Contains(c);
         }
 
         static Lexer()
@@ -61,7 +76,8 @@ namespace Aura
             AddToken(TokenType.Class, "class");
             AddToken(TokenType.Actor, "actor");
             AddToken(TokenType.Interface, "interface");
-            
+            AddToken(TokenType.Namespace, "namespace");
+
             AddToken(TokenType.Public, "public");
             AddToken(TokenType.Protected, "protected");
             AddToken(TokenType.Private, "private");
@@ -81,10 +97,7 @@ namespace Aura
 
         public Lexer(TextReader reader)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            Reader = reader;
+            Reader = reader ?? throw new ArgumentNullException(nameof(reader));
         }
 
         public int Read()
@@ -115,10 +128,10 @@ namespace Aura
         {
             var buffer = c.ToString();
             var i = Reader.Peek();
-            while (i != -1 && char.IsLetterOrDigit((char) i))
+            while (i != -1 && !IsIgnored((char)i))
             {
                 Read();
-                buffer += (char) i;
+                buffer += (char)i;
                 i = Reader.Peek();
             }
             return buffer.Trim();
@@ -134,9 +147,9 @@ namespace Aura
                 if (c == -1)
                     break;
 
-                if (CreateCharToken(result, (char) c)) continue;
+                if (CreateCharToken(result, (char)c)) continue;
 
-                var buffer = ReadWord((char) c);
+                var buffer = ReadWord((char)c);
                 if (buffer.Length == 0) continue;
                 var found = false;
 

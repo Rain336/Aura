@@ -29,7 +29,12 @@ namespace Aura.Parsers
                         throw new ParserException("Expected Operator", token);
                 }
 
-                left = new BinaryOperator(left, op.Type, right);
+                left = new BinaryOperator
+                {
+                    Left = left,
+                    Operator = op.Type,
+                    Right = right
+                };
             }
 
             return left;
@@ -41,7 +46,11 @@ namespace Aura.Parsers
             if (token.Type != TokenType.Plus && token.Type != TokenType.Minus)
                 throw new ParserException("Plus or Minus", token);
 
-            return new UnaryOperator(ParseExpression(), token.Type);
+            return new UnaryOperator
+            {
+                Expression = ParseExpression(),
+                Type = token.Type
+            };
         }
     }
 }
